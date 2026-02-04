@@ -1,0 +1,79 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+ Refused to set unsafe header "Accept-Encoding"
+setRequestHeader @ main.4f06390822d921d…1.hot-update.js:831
+ Refused to set unsafe header "Connection"
+setRequestHeader @ main.4f06390822d921d…1.hot-update.js:831
+ Refused to set unsafe header "User-Agent"
+setRequestHeader @ main.4f06390822d921d…1.hot-update.js:831
+ Refused to set unsafe header "Accept-Encoding"
+setRequestHeader @ main.4f06390822d921d…1.hot-update.js:831
+ Refused to set unsafe header "Connection"
+setRequestHeader @ main.4f06390822d921d…1.hot-update.js:831
+ Refused to set unsafe header "User-Agent"
+setRequestHeader @ main.4f06390822d921d…1.hot-update.js:831
+ Refused to set unsafe header "Accept-Encoding"date.js:202
+useMtnAccount.js:41 Error fetching MTN data: AxiosError: Network Error
+    at XMLHttpRequest.handleError (xhr.js:112:1)
+    at Axios.request (Axios.js:45:1)
+    at async Object.getCatalogue (mtnApi.js:114:1)
+    at async Promise.all (:3001/index 2)
+    at async useMtnAccount.js:23:1
+(anonymous) @ useMtnAccount.js:41
+catalogue-prd-mmn.mtn.com/api/v1/catalogue:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+mtnApi.js:59 MTN API Error: Network Error
+(anonymous) @ mtnApi.js:59
+services-prd-mmn.mtn.com/api/v1/services:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+ MTN API Error: Network Error
+(anonymous) @ main.4f06390822d921d…1.hot-update.js:202
+history-prd-mmn.mtn.com/api/v1/transactions?limit=10&offset=0:1  Failed to load resource: net::ERR_NAME_NOT_RESOLVED
+profile-prd-mmn.mtn.com/api/v1/customerProfile:1  Failed to load resource: the server responded with a status of 500 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+profile-prd-mmn.mtn.com/api/v1/customerProfile:1  Failed to load resource: the server responded with a status of 500 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+balances-prd-mmn.mtn.com/api/v1/customerBalances:1  Failed to load resource: the server responded with a status of 401 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+balances-prd-mmn.mtn.com/api/v1/customerBalances:1  Failed to load resource: the server responded with a status of 401 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+profile-prd-mmn.mtn.com/api/v1/customerProfile:1  Failed to load resource: the server responded with a status of 500 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+balances-prd-mmn.mtn.com/api/v1/customerBalances:1  Failed to load resource: the server responded with a status of 401 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+profile-prd-mmn.mtn.com/api/v1/customerProfile:1  Failed to load resource: the server responded with a status of 500 ()
+mtnApi.js:59 MTN API Error: Object
+(anonymous) @ mtnApi.js:59
+balances-prd-mmn.mtn.com/api/v1/customerBalances:1  Failed to load resource: the server responded with a status of 401 ()
+mtnApi.js:59 MTN API Error: Object
+
+(base) kickstack@pop-os:~/Workspace/MTN/mtn-jwt-editor$ curl -X GET 'https://balances-prd-mmn.mtn.com/api/v1/customerBalances' \
+  -H 'accept: application/json' \
+  -H 'Accept-Encoding: gzip' \
+  -H 'authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjR2MC1ONUlKalZ2blp0M1pjV21tXyJ9.eyJodHRwczovL215bXRuLmNvbS9sb2dpbkNvdW50Ijo0LCJodHRwczovL215bXRuLmNvbS9waG9uZV9udW1iZXIiOiIrMjM3NjUyNzY5ODI4IiwiaHR0cHM6Ly9teW10bi5jb20vY291bnRyeSI6IkNNUiIsIm5pY2tuYW1lIjoiKzIzNzY1Mjc2OTgyOCIsIm5hbWUiOiIrMjM3NjUyNzY5ODI4IiwicGljdHVyZSI6Imh0dHBzOi8vY2RuLmF1dGgwLmNvbS9hdmF0YXJzLzIucG5nIiwidXBkYXRlZF9hdCI6IjIwMjUtMTItMjlUMDQ6MDY6MjYuMjE2WiIsImlzcyI6Imh0dHBzOi8vbXRuY20tcHJvZC5tdG4uYXV0aDAuY29tLyIsImF1ZCI6IkZUbEk1aFpOS2NpWVRRaG0zR05HbVdUTFl0WkphYXg4Iiwic3ViIjoic21zfDY5NDhmZjc4N2E2ZmY0NjM0MDdkYTMzOCIsImlhdCI6MTc2Njk4MTE4OCwiZXhwIjoxNzY3MDE3MTg4LCJzaWQiOiIyWGd6QVNQQWhndHhKZ2NxTGc3Vmd0SmQxNHFTWUIyOCIsImF1dGhfdGltZSI6MTc2Njk4MTE4Nn0.uOWjUZ2Ii1xSvvc0cwY7US6JdCVo5J7swjuaqsQU7oovIikTSRmfsVr4BGNVfTeHaSLpS8t8KiRQFVoXYBOHtkEtud4ipWdVFsO8LIw84Gx4C2dzudSDjW9ptpG32Cp1Hhu1NT-3rnbNsWuhVEy7g5a5eg3VUDN88a-yKrQlB5priNMtC-zAjZykVyARJpGLRB-oZUHpTeWAx-iS_DhVbtMZbSDs7vKPaAFjDBv_efQXrGP4Mo27UGr8uuDBMAeQuw3yNOYvnfVC9emVCXeTSGvPmXztm6iZ4zOQbiDp6y16ksab9I5VKplOSttgDu7bO3joMTyIj2_II1yjrFhAng' \
+  -H 'baggage: session.id=c173786c-e0e4-4101-b66d-851af6af4efe' \
+  -H 'Connection: Keep-Alive' \
+  -H 'Host: balances-prd-mmn.mtn.com' \
+  -H 'If-Modified-Since: Mon, 29 Dec 2025 04:28:58 GMT' \
+  -H 'traceparent: 00-69520390000000006fb8de8e83b2bbdb-7d0c74e5c4a2c644-00' \
+  -H 'tracestate: dd=s:0;o:rum;p:7d0c74e5c4a2c644' \
+  -H 'User-Agent: okhttp/4.12.0' \
+  -H 'x-api-key: Zc6UlREHF93xwmfy8oszu7l9ALcgIYNVjHph5J3MuwU=' \
+  -H 'x-country-code: cmr' \
+  -H 'x-language-code: en'8050429037601012699' \' \
+[{"name":"AIRTIME","value":6000,"icon":"airtime","label":"AIRTIME","display_value":"6000","display_name":"6000 U","unit":"U","detailed_balances":[{"display_name":"","value":6000,"icon":"airtime","display_value":"6000 U"}]},{"name":"DATA","value":74.95,"icon":"data","expiry":"31 December 2036 00:00 AM","label":"DATA","display_value":"74.95","display_name":"75.0 MB","unit":"MB","detailed_balances":[{"display_name":"Internet Bonus for myMTN","value":74.95,"icon":"data","display_value":"75.0 MB","expiry":"31 December 2036 00:00 AM"}]},{"name":"VOICE","value":0,"icon":"voice","label":"VOICE","display_value":"0","display_name":"0 MIN","unit":"Min"},{"name":"MOMO","value":0,"icon":"momo","label":"MOMO","display_value":"0","display_name":"0 U","unit":"U"},{"name":"SMS","value":0,"icon":"sms","label":"SMS","display_value":"0","display_name":"0 SMS","unit":"SMS"}]
+(base) kickstack@pop-os:~/Workspace/MTN/mtn-jwt-editor$
+
+mtnApi.js:59 MTN API Error: 
+{message: 'JWT Token missing. Please provide valid credentials'}
+message
+: 
+"JWT Token missing. Please provide valid credentials"
+[[Prototype]]
+: 
+Object
+
+on va faire simple, je t'ai bien dit que lrsqu'on met le numero le token se genere seul et tu dois strictement suivre les meme header comme je t'ai envoye la en generant les bons. tu joues a quoi? de plus on peut mettre a +237 ou pas c'est cense prendre

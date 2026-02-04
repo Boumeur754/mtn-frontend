@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  .mtn-btn-primary {
+    @apply bg-mtn-yellow text-mtn-black font-semibold py-3 px-6 rounded-lg 
+           hover:bg-mtn-yellow-dark transition-all duration-200 
+           flex items-center justify-center gap-2;
+  }
+  
+  .mtn-btn-secondary {
+    @apply bg-mtn-gray-light text-mtn-gray-dark font-semibold py-3 px-6 rounded-lg 
+           hover:bg-gray-200 transition-all duration-200 
+           flex items-center justify-center gap-2;
+  }
+  
+  .mtn-btn-success {
+    @apply bg-mtn-green text-white font-semibold py-3 px-6 rounded-lg 
+           hover:bg-green-600 transition-all duration-200 
+           flex items-center justify-center gap-2;
+  }
+  
+  .mtn-card {
+    @apply bg-white rounded-xl shadow-lg border border-gray-200;
+  }
+  
+  .mtn-input {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg 
+           focus:ring-2 focus:ring-mtn-yellow focus:border-transparent 
+           focus:outline-none transition-all duration-200;
+  }
+  
+  .mtn-label {
+    @apply block text-sm font-medium text-mtn-gray-dark mb-2;
+  }
+  
+  .mtn-tab-active {
+    @apply border-b-4 border-mtn-yellow text-mtn-yellow-dark 
+           bg-gradient-to-b from-yellow-50/50 to-transparent;
+  }
+  
+  .mtn-tab-inactive {
+    @apply border-b-4 border-transparent text-mtn-gray 
+           hover:text-mtn-gray-dark hover:bg-mtn-gray-light;
+  }
+}
