@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { 
-  User, CreditCard, Package, History, Gift, 
+import {
+  User, CreditCard, Package, History, Gift,
   RefreshCw, Phone, CheckCircle, AlertCircle,
   Wifi, MessageSquare, PhoneCall, ChevronRight,
   Filter, Search, DollarSign, Clock, Globe,
@@ -9,8 +9,8 @@ import {
   Battery, BatteryCharging, Zap, Activity,
   Bell, Settings, LogOut, Home, BarChart,
   TrendingUp, Tag, Star, Award, Crown,
-  Eye, EyeOff, Lock, Unlock, Radio,
-  MapPin, Flag, Heart, ShoppingCart, Truck,Code
+  Eye, EyeOff, Lock, Unlock, Radio, Key,
+  MapPin, Flag, Heart, ShoppingCart, Truck, Code
 } from 'lucide-react';
 import { useMtnAccount } from '../hooks/useMtnAccount';
 import { toast } from 'react-toastify';
@@ -21,7 +21,87 @@ const AccountManager = () => {
   const [activeSection, setActiveSection] = useState('profile');
   const [filterCategory, setFilterCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  
+  // Ajoutez ces états au début de votre composant AccountManager
+  const [phoneInput, setPhoneInput] = useState('');
+  const [tokenInput, setTokenInput] = useState('');
+  const [showTokenInput, setShowTokenInput] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
+
+  // Fonction de connexion avec numéro
+  const handlePhoneLogin = async (e) => {
+    e.preventDefault();
+
+    if (!phoneInput || phoneInput.length !== 9) {
+      toast.warning('Veuillez entrer un numéro valide (9 chiffres)');
+      return;
+    }
+
+    setLoginLoading(true);
+
+    try {
+      const fullPhone = '+237' + phoneInput;
+
+      // Appeler l'API de connexion simplifiée
+    // const response = await axios.post(`${API_BASE_URL}/api/jwt/decode`, { token });
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: fullPhone })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setJwtToken(result.token);
+        localStorage.setItem('mtn_jwt_token', result.token);
+        toast.success(`✅ Connecté avec le numéro ${fullPhone}`);
+      } else {
+        toast.error(result.message || 'Erreur de connexion');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Erreur lors de la connexion');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  // Fonction de connexion avec token complet
+  const handleTokenLogin = (e) => {
+    e.preventDefault();
+
+    if (!tokenInput.trim()) {
+      toast.warning('Veuillez entrer un token JWT');
+      return;
+    }
+
+    // Vérifier le format du token
+    const parts = tokenInput.split('.');
+    if (parts.length !== 3) {
+      toast.warning('Format JWT invalide. Il doit avoir 3 parties séparées par des points.');
+      return;
+    }
+
+    setJwtToken(tokenInput);
+    localStorage.setItem('mtn_jwt_token', tokenInput);
+
+    // Extraire le numéro du token
+    try {
+      const payload = JSON.parse(atob(parts[1]));
+      const phone = payload['https://mymtn.com/phone_number'] || payload.phone_number;
+      toast.success(`✅ Token chargé pour le numéro ${phone || 'inconnu'}`);
+    } catch (err) {
+      console.warn('Impossible de décoder le JWT:', err);
+      toast.success('✅ Token chargé avec succès');
+    }
+
+    setShowTokenInput(false);
+    setTokenInput('');
+  };
+
   // États pour la modal de souscription
   const [subscriptionModal, setSubscriptionModal] = useState({
     isOpen: false,
@@ -57,12 +137,12 @@ const AccountManager = () => {
   // Auto-refresh
   useEffect(() => {
     if (!autoRefresh || !jwtToken) return;
-    
+
     const interval = setInterval(() => {
       refresh();
       toast.info('🔄 Données actualisées automatiquement');
     }, refreshInterval * 1000);
-    
+
     return () => clearInterval(interval);
   }, [autoRefresh, refreshInterval, jwtToken]);
 
@@ -79,29 +159,29 @@ const AccountManager = () => {
   // Gestion du formulaire JWT
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!jwtToken || jwtToken.trim().length < 50) {
       toast.warning('Veuillez entrer un token JWT valide (min 50 caractères)');
       return;
     }
-    
+
     localStorage.setItem('mtn_jwt_token', jwtToken);
-    
+
     // Vérifier le format du token
     const parts = jwtToken.split('.');
     if (parts.length !== 3) {
       toast.warning('Format JWT invalide. Il doit avoir 3 parties séparées par des points.');
       return;
     }
-    
+
     toast.success('✅ Token JWT enregistré avec succès');
-    
+
     // Décoder et afficher les infos du token
     try {
       const payload = JSON.parse(atob(parts[1]));
       const phone = payload['https://mymtn.com/phone_number'] || payload.phone_number;
       const exp = payload.exp ? new Date(payload.exp * 1000).toLocaleString() : 'Inconnue';
-      
+
       console.log('🔍 Token décodé:', {
         téléphone: phone,
         expiration: exp,
@@ -135,7 +215,7 @@ const AccountManager = () => {
       phoneNumber,
       data
     };
-    
+
     const dataStr = JSON.stringify(exportObj, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -146,14 +226,14 @@ const AccountManager = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     toast.success('📁 Données exportées avec succès');
   };
 
   // Ouvrir la modal de souscription
   const openSubscriptionModal = (bundle) => {
     if (!bundle) return;
-    
+
     setSubscriptionModal({
       isOpen: true,
       bundle,
@@ -179,16 +259,16 @@ const AccountManager = () => {
   // Valider et exécuter la souscription
   const executeSubscription = async () => {
     const { bundle, beneficiaryPhone, subscriptionType } = subscriptionModal;
-    
+
     if (!bundle) return;
-    
+
     // Validation
     if (subscriptionType === 'gift') {
       if (!beneficiaryPhone) {
         toast.error('❌ Veuillez entrer un numéro de bénéficiaire');
         return;
       }
-      
+
       // Normaliser le numéro
       let normalizedPhone = beneficiaryPhone;
       if (!beneficiaryPhone.startsWith('+') && !beneficiaryPhone.startsWith('237')) {
@@ -196,24 +276,24 @@ const AccountManager = () => {
       } else if (beneficiaryPhone.startsWith('237')) {
         normalizedPhone = '+' + beneficiaryPhone;
       }
-      
+
       // Validation du format
       const phoneRegex = /^(\+237|237)[0-9]{9}$/;
       if (!phoneRegex.test(normalizedPhone)) {
         toast.error('❌ Format de numéro invalide. Exemple: +237612345678');
         return;
       }
-      
+
       // Vérifier que ce n'est pas le même numéro
       if (normalizedPhone === phoneNumber) {
         toast.warning('⚠️ Vous ne pouvez pas vous offrir un forfait à vous-même');
         return;
       }
-      
+
       // Mettre à jour avec le numéro normalisé
       setSubscriptionModal(prev => ({ ...prev, beneficiaryPhone: normalizedPhone }));
     }
-    
+
     // Afficher la confirmation
     setSubscriptionModal(prev => ({ ...prev, showConfirmation: true }));
   };
@@ -221,9 +301,9 @@ const AccountManager = () => {
   // Confirmer et envoyer la souscription
   const confirmSubscription = async () => {
     const { bundle, beneficiaryPhone, subscriptionType } = subscriptionModal;
-    
+
     setSubscriptionModal(prev => ({ ...prev, isLoading: true }));
-    
+
     try {
       console.log('\n🎯 ======== DÉBUT DE LA REQUÊTE MTN ========');
       console.log('📦 Forfait:', bundle.name);
@@ -234,26 +314,26 @@ const AccountManager = () => {
       console.log('🏷️ NACT Code:', bundle.nact_code);
       console.log('⏰ Timestamp:', new Date().toISOString());
       console.log('==========================================\n');
-      
+
       const beneficiary = subscriptionType === 'gift' ? beneficiaryPhone : null;
       const result = await subscribeToBundle(bundle, beneficiary);
-      
+
       console.log('✅ Réponse de l\'API MTN:', result);
-      
+
       toast.success(
-        subscriptionType === 'gift' 
-          ? `🎁 Forfait offert à ${beneficiaryPhone} !` 
+        subscriptionType === 'gift'
+          ? `🎁 Forfait offert à ${beneficiaryPhone} !`
           : `✅ Souscription à ${bundle.name} réussie !`
       );
-      
+
       closeSubscriptionModal();
-      
+
       // Rafraîchir les données après un délai
       setTimeout(() => {
         refresh();
         toast.info('🔄 Données actualisées');
       }, 3000);
-      
+
     } catch (error) {
       console.error('❌ Erreur lors de la souscription:', error);
       setSubscriptionModal(prev => ({ ...prev, isLoading: false, showConfirmation: false }));
@@ -280,9 +360,9 @@ const AccountManager = () => {
   // Extraire tous les forfaits du catalogue
   const getAllBundles = useCallback(() => {
     if (!data.catalogue || !Array.isArray(data.catalogue)) return [];
-    
+
     const allBundles = [];
-    
+
     // Parcourir tous les produits du catalogue
     data.catalogue.forEach(product => {
       if (product.categories && Array.isArray(product.categories)) {
@@ -301,14 +381,14 @@ const AccountManager = () => {
         });
       }
     });
-    
+
     return allBundles;
   }, [data.catalogue]);
 
   // Filtrer les forfaits
   const getFilteredBundles = useMemo(() => {
     let bundles = getAllBundles();
-    
+
     // Filtrer par catégorie
     if (filterCategory !== 'all') {
       bundles = bundles.filter(bundle => {
@@ -319,24 +399,24 @@ const AccountManager = () => {
         if (filterCategory === 'cheap') return (bundle.cost?.value || 0) <= 500;
         if (filterCategory === 'unlimited') return bundle.unlimited || bundle.size?.display_name === 'UNLIMITED';
         if (filterCategory === 'night') return bundle.name?.toLowerCase().includes('night');
-        if (filterCategory === 'social') return bundle.name?.toLowerCase().includes('whatsapp') || 
-                                             bundle.name?.toLowerCase().includes('tiktok') || 
-                                             bundle.name?.toLowerCase().includes('social');
+        if (filterCategory === 'social') return bundle.name?.toLowerCase().includes('whatsapp') ||
+          bundle.name?.toLowerCase().includes('tiktok') ||
+          bundle.name?.toLowerCase().includes('social');
         return true;
       });
     }
-    
+
     // Filtrer par recherche
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      bundles = bundles.filter(bundle => 
+      bundles = bundles.filter(bundle =>
         bundle.name?.toLowerCase().includes(term) ||
         bundle.description?.toLowerCase().includes(term) ||
         bundle.type?.toLowerCase().includes(term) ||
         bundle.productName?.toLowerCase().includes(term)
       );
     }
-    
+
     return bundles;
   }, [getAllBundles, filterCategory, searchTerm]);
 
@@ -353,6 +433,7 @@ const AccountManager = () => {
   }, [getAllBundles]);
 
   // Si pas de token JWT, afficher le formulaire d'entrée
+  // Dans AccountManager.jsx - Remplacer toute la section if (!jwtToken) { ... }
   if (!jwtToken) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-mtn-gray-light to-gray-100 flex items-center justify-center p-4">
@@ -365,69 +446,128 @@ const AccountManager = () => {
               Connexion MTN Account
             </h1>
             <p className="text-mtn-gray">
-              Entrez votre token JWT pour accéder à votre compte MTN
+              Entrez votre numéro MTN pour accéder au simulateur
             </p>
           </div>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
+
+          <form onSubmit={handlePhoneLogin} className="space-y-6">
             <div>
-              <label className="mtn-label">
-                <Lock className="w-4 h-4 inline mr-2" />
-                Token JWT MTN
+              <label className="mtn-label flex items-center gap-2">
+                <Phone className="w-5 h-5" />
+                Numéro MTN Cameroun
               </label>
-              <textarea
-                value={jwtToken}
-                onChange={(e) => setJwtToken(e.target.value)}
-                placeholder="eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjR2MC1ONUlKalZ2blp0M1pjV21tXyJ9.eyJodHRwczovL215bXRuLmNvbS9sb2dpbkNvdW50Ijo0LCJodHRwczovL215bXRuLmNvbS9waG9uZV9udW1iZXIiOiIrMjM3NjEyMzQ1Njc4IiwiaHR0cHM6Ly9teW10bi5jb20vY291bnRyeSI6IkNNUiIsIm5pY2tuYW1lIjoiKzIzNzYxMjM0NTY3OCIsIm5hbWUiOiIrMjM3NjEyMzQ1Njc4IiwicGljdHVyZSI6Imh0dHBzOi8vY2RuLmF1dGgwLmNvbS9hdmF0YXJzLzIucG5nIiwidXBkYXRlZF9hdCI6IjIwMjUtMTItMjlUMDQ6MDY6MjYuMjE2WiIsImlzcyI6Imh0dHBzOi8vbXRuY20tcHJvZC5tdG4uYXV0aDAuY29tLyIsImF1ZCI6IkZUbEk1aFpOS2NpWVRRaG0zR05HbVdUTFl0WkphYXg4Iiwic3ViIjoic21zfDY5NDhmZjc4N2E2ZmY0NjM0MDdkYTMzOCIsImlhdCI6MTc2Njk4MTE4OCwiZXhwIjoxNzY3MDE3MTg4LCJzaWQiOiIyWGd6QVNQQWhndHhKZ2NxTGc3Vmd0SmQxNHFTWUIyOCIsImF1dGhfdGltZSI6MTc2Njk4MTE4Nn0.uOWjUZ2Ii1xSvvc0cwY7US6JdCVo5J7swjuaqsQU7oovIikTSRmfsVr4BGNVfTeHaSLpS8t8KiRQFVoXYBOHtkEtud4ipWdVFsO8LIw84Gx4C2dzudSDjW9ptpG32Cp1Hhu1NT-3rnbNsWuhVEy7g5a5eg3VUDN88a-yKrQlB5priNMtC-zAjZykVyARJpGLRB-oZUHpTeWAx-iS_DhVbtMZbSDs7vKPaAFjDBv_efQXrGP4Mo27UGr8uuDBMAeQuw3yNOYvnfVC9emVCXeTSGvPmXztm6iZ4zOQbiDp6y16ksab9I5VKplOSttgDu7bO3joMTyIj2_II1yjrFhAng"
-                rows={6}
-                className="mtn-input font-mono text-sm"
-                required
-              />
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-xs text-mtn-gray">
-                  Obtenez ce token depuis l'onglet <strong>Décodage</strong>
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setJwtToken(localStorage.getItem('last_jwt_token') || '')}
-                  className="text-xs text-mtn-blue hover:text-mtn-blue-dark"
-                >
-                  Charger le dernier token
-                </button>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-mtn-gray">
+                  +237
+                </div>
+                <input
+                  type="tel"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value.replace(/\D/g, ''))}
+                  placeholder="XXXXXXXXX"
+                  maxLength={9}
+                  className="w-full pl-16 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mtn-yellow focus:border-transparent"
+                  required
+                />
               </div>
+              <p className="text-sm text-mtn-gray mt-2">
+                Format: 9 chiffres après +237 (ex: 612345678)
+              </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 type="submit"
-                className="w-full mtn-btn-primary"
+                disabled={loading || phoneInput.length !== 9}
+                className="w-full mtn-btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <CheckCircle className="w-5 h-5" />
-                Se connecter
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Connexion...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Se connecter
+                  </>
+                )}
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => {
-                  const sampleToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjR2MC1ONUlKalZ2blp0M1pjV21tXyJ9.eyJodHRwczovL215bXRuLmNvbS9sb2dpbkNvdW50Ijo0LCJodHRwczovL215bXRuLmNvbS9waG9uZV9udW1iZXIiOiIrMjM3NjEyMzQ1Njc4IiwiaHR0cHM6Ly9teW10bi5jb20vY291bnRyeSI6IkNNUiIsIm5pY2tuYW1lIjoiKzIzNzYxMjM0NTY3OCIsIm5hbWUiOiIrMjM3NjEyMzQ1Njc4IiwicGljdHVyZSI6Imh0dHBzOi8vY2RuLmF1dGgwLmNvbS9hdmF0YXJzLzIucG5nIiwidXBkYXRlZF9hdCI6IjIwMjUtMTItMjlUMDQ6MDY6MjYuMjE2WiIsImlzcyI6Imh0dHBzOi8vbXRuY20tcHJvZC5tdG4uYXV0aDAuY29tLyIsImF1ZCI6IkZUbEk1aFpOS2NpWVRRaG0zR05HbVdUTFl0WkphYXg4Iiwic3ViIjoic21zfDY5NDhmZjc4N2E2ZmY0NjM0MDdkYTMzOCIsImlhdCI6MTc2Njk4MTE4OCwiZXhwIjoxNzY3MDE3MTg4LCJzaWQiOiIyWGd6QVNQQWhndHhKZ2NxTGc3Vmd0SmQxNHFTWUIyOCIsImF1dGhfdGltZSI6MTc2Njk4MTE4Nn0.uOWjUZ2Ii1xSvvc0cwY7US6JdCVo5J7swjuaqsQU7oovIikTSRmfsVr4BGNVfTeHaSLpS8t8KiRQFVoXYBOHtkEtud4ipWdVFsO8LIw84Gx4C2dzudSDjW9ptpG32Cp1Hhu1NT-3rnbNsWuhVEy7g5a5eg3VUDN88a-yKrQlB5priNMtC-zAjZykVyARJpGLRB-oZUHpTeWAx-iS_DhVbtMZbSDs7vKPaAFjDBv_efQXrGP4Mo27UGr8uuDBMAeQuw3yNOYvnfVC9emVCXeTSGvPmXztm6iZ4zOQbiDp6y16ksab9I5VKplOSttgDu7bO3joMTyIj2_II1yjrFhAng";
-                  setJwtToken(sampleToken);
-                  toast.info('Token exemple chargé (modifiez le numéro)');
+                  const prefixes = ['65', '66', '67', '68', '69'];
+                  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                  const suffix = Math.floor(1000000 + Math.random() * 9000000);
+                  const randomNumber = `+237${prefix}${suffix}`.substring(0, 13);
+                  setPhoneInput(randomNumber.replace('+237', ''));
+                  toast.info('Numéro aléatoire généré');
                 }}
                 className="w-full mtn-btn-secondary"
               >
-                <Database className="w-5 h-5" />
-                Charger un exemple
+                <RefreshCw className="w-5 h-5" />
+                Numéro aléatoire
               </button>
             </div>
-            
-            <div className="text-center">
+
+            <div className="text-center pt-4 border-t border-gray-200">
               <p className="text-sm text-mtn-gray">
-                En vous connectant, vous acceptez que votre token JWT soit stocké localement
+                Utilisez l'onglet <strong>Éditeur JWT</strong> pour un contrôle avancé
                 <br />
-                pour la durée de votre session.
+                ou entrez directement un token JWT complet
               </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowTokenInput(true);
+                  setPhoneInput('');
+                }}
+                className="mt-3 text-sm text-mtn-blue hover:text-mtn-blue-dark font-medium"
+              >
+                <Key className="w-4 h-4 inline mr-1" />
+                Utiliser un token JWT complet
+              </button>
             </div>
           </form>
+
+          {/* Input pour token JWT complet (caché par défaut) */}
+          {showTokenInput && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h4 className="text-lg font-semibold text-mtn-gray-dark mb-4 flex items-center gap-2">
+                <Key className="w-5 h-5 text-mtn-yellow" />
+                Connexion avec token JWT complet
+              </h4>
+              <form onSubmit={handleTokenLogin} className="space-y-4">
+                <textarea
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  placeholder="Collez votre token JWT MTN complet ici..."
+                  rows={4}
+                  className="mtn-input font-mono text-sm"
+                />
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="flex-1 mtn-btn-primary"
+                    disabled={!tokenInput.trim()}
+                  >
+                    Utiliser ce token
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowTokenInput(false);
+                      setTokenInput('');
+                    }}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -453,7 +593,7 @@ const AccountManager = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="hidden md:flex items-center gap-4">
                 <div className="text-right">
@@ -465,7 +605,7 @@ const AccountManager = () => {
                 </div>
                 <div className="h-8 w-px bg-gray-600"></div>
               </div>
-              
+
               <div className="flex gap-2">
                 <button
                   onClick={refresh}
@@ -475,7 +615,7 @@ const AccountManager = () => {
                   <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                   Actualiser
                 </button>
-                
+
                 <div className="relative group">
                   <button className="px-4 py-2 bg-mtn-gray-dark border border-gray-700 rounded-lg hover:bg-gray-800 transition flex items-center gap-2">
                     <Settings className="w-4 h-4" />
@@ -526,7 +666,7 @@ const AccountManager = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <button
                   onClick={handleClearData}
                   className="px-4 py-2 bg-mtn-red text-white font-semibold rounded-lg hover:bg-red-700 transition flex items-center gap-2"
@@ -636,7 +776,7 @@ const AccountManager = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-4">
@@ -653,7 +793,7 @@ const AccountManager = () => {
                           <p className="text-lg font-semibold">{data.profile.segment}</p>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-4">
                         <div>
                           <span className="text-sm text-mtn-gray block mb-1">Date d'activation</span>
@@ -786,7 +926,7 @@ const AccountManager = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div>
                       <p className="text-3xl font-bold text-mtn-gray-dark">
@@ -794,7 +934,7 @@ const AccountManager = () => {
                       </p>
                       <p className="text-sm text-mtn-gray">{balance.unit}</p>
                     </div>
-                    
+
                     {balance.detailed_balances && balance.detailed_balances.length > 0 && (
                       <div className="pt-3 border-t border-gray-100">
                         <p className="text-xs text-mtn-gray mb-2">Détails:</p>
@@ -858,7 +998,7 @@ const AccountManager = () => {
                   {stats.totalBundles} forfaits disponibles • {stats.dataBundles} Data • {stats.voiceBundles} Voice
                 </p>
               </div>
-              
+
               <div className="flex flex-wrap gap-3">
                 <div className="relative flex-1 min-w-[250px]">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-mtn-gray" />
@@ -870,7 +1010,7 @@ const AccountManager = () => {
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mtn-yellow focus:border-transparent"
                   />
                 </div>
-                
+
                 <select
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
@@ -886,7 +1026,7 @@ const AccountManager = () => {
                   <option value="social">Réseaux sociaux</option>
                   <option value="combo">Forfaits Combo</option>
                 </select>
-                
+
                 <button
                   onClick={() => {
                     setSearchTerm('');
@@ -948,12 +1088,11 @@ const AccountManager = () => {
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <div className="flex items-center gap-2 mb-2">
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  bundle.type === 'Data' ? 'bg-blue-100 text-blue-800' :
-                                  bundle.type === 'Voice' ? 'bg-green-100 text-green-800' :
-                                  bundle.type === 'SMS' ? 'bg-purple-100 text-purple-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${bundle.type === 'Data' ? 'bg-blue-100 text-blue-800' :
+                                    bundle.type === 'Voice' ? 'bg-green-100 text-green-800' :
+                                      bundle.type === 'SMS' ? 'bg-purple-100 text-purple-800' :
+                                        'bg-gray-100 text-gray-800'
+                                  }`}>
                                   {bundle.type || 'Bundle'}
                                 </span>
                                 {bundle.unlimited && (
@@ -976,7 +1115,7 @@ const AccountManager = () => {
                               <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                             )}
                           </div>
-                          
+
                           {/* Description */}
                           {bundle.description && (
                             <p className="text-sm text-mtn-gray line-clamp-2">
@@ -997,7 +1136,7 @@ const AccountManager = () => {
                               {formatSize(bundle.size || bundle.value)}
                             </span>
                           </div>
-                          
+
                           {/* Validité */}
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-mtn-gray">
@@ -1008,7 +1147,7 @@ const AccountManager = () => {
                               {bundle.validity?.display_name || bundle.validity?.unit || '24h'}
                             </span>
                           </div>
-                          
+
                           {/* Prix */}
                           <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                             <div className="flex items-center gap-2 text-mtn-gray">
@@ -1019,7 +1158,7 @@ const AccountManager = () => {
                               {formatPrice(bundle.cost)}
                             </span>
                           </div>
-                          
+
                           {/* Bonus */}
                           {bundle.freebies && Array.isArray(bundle.freebies) && bundle.freebies.length > 0 && (
                             <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
@@ -1042,7 +1181,7 @@ const AccountManager = () => {
                               </ul>
                             </div>
                           )}
-                          
+
                           {/* Méthodes de paiement */}
                           {bundle.payment_methods && (
                             <div className="pt-3 border-t border-gray-100">
@@ -1078,7 +1217,7 @@ const AccountManager = () => {
                             <ShoppingCart className="w-5 h-5" />
                             {bundle.can_buy_for_self ? 'Souscrire' : 'Offrir'}
                           </button>
-                          
+
                           <div className="flex justify-between items-center mt-3 text-sm">
                             <div className="flex items-center gap-2">
                               {bundle.can_buy_for_self && (
@@ -1258,23 +1397,21 @@ const AccountManager = () => {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <button
-                        onClick={() => setSubscriptionModal(prev => ({ 
-                          ...prev, 
+                        onClick={() => setSubscriptionModal(prev => ({
+                          ...prev,
                           subscriptionType: 'self',
                           beneficiaryPhone: ''
                         }))}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-                          subscriptionModal.subscriptionType === 'self'
+                        className={`p-6 rounded-xl border-2 transition-all duration-300 ${subscriptionModal.subscriptionType === 'self'
                             ? 'border-mtn-yellow bg-mtn-yellow/10 shadow-md'
                             : 'border-gray-200 hover:border-mtn-yellow hover:shadow-sm'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-full ${
-                            subscriptionModal.subscriptionType === 'self'
+                          <div className={`p-3 rounded-full ${subscriptionModal.subscriptionType === 'self'
                               ? 'bg-mtn-yellow text-mtn-black'
                               : 'bg-gray-100 text-gray-500'
-                          }`}>
+                            }`}>
                             <User className="w-6 h-6" />
                           </div>
                           <div className="text-left">
@@ -1290,23 +1427,21 @@ const AccountManager = () => {
                       </button>
 
                       <button
-                        onClick={() => setSubscriptionModal(prev => ({ 
-                          ...prev, 
+                        onClick={() => setSubscriptionModal(prev => ({
+                          ...prev,
                           subscriptionType: 'gift',
                           beneficiaryPhone: ''
                         }))}
-                        className={`p-6 rounded-xl border-2 transition-all duration-300 ${
-                          subscriptionModal.subscriptionType === 'gift'
+                        className={`p-6 rounded-xl border-2 transition-all duration-300 ${subscriptionModal.subscriptionType === 'gift'
                             ? 'border-mtn-yellow bg-mtn-yellow/10 shadow-md'
                             : 'border-gray-200 hover:border-mtn-yellow hover:shadow-sm'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-full ${
-                            subscriptionModal.subscriptionType === 'gift'
+                          <div className={`p-3 rounded-full ${subscriptionModal.subscriptionType === 'gift'
                               ? 'bg-mtn-yellow text-mtn-black'
                               : 'bg-gray-100 text-gray-500'
-                          }`}>
+                            }`}>
                             <Gift className="w-6 h-6" />
                           </div>
                           <div className="text-left">
@@ -1340,9 +1475,9 @@ const AccountManager = () => {
                         value={subscriptionModal.beneficiaryPhone.replace('+237', '')}
                         onChange={(e) => {
                           const value = e.target.value.replace(/\D/g, '').slice(0, 9);
-                          setSubscriptionModal(prev => ({ 
-                            ...prev, 
-                            beneficiaryPhone: '+237' + value 
+                          setSubscriptionModal(prev => ({
+                            ...prev,
+                            beneficiaryPhone: '+237' + value
                           }));
                         }}
                         placeholder="XXXXXXXXX"
@@ -1353,7 +1488,7 @@ const AccountManager = () => {
                     <p className="text-xs text-mtn-gray mt-2">
                       Format: 9 chiffres après +237 (ex: 612345678)
                     </p>
-                    
+
                     {/* Validation */}
                     {subscriptionModal.beneficiaryPhone && subscriptionModal.beneficiaryPhone.length === 13 && (
                       <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -1372,16 +1507,16 @@ const AccountManager = () => {
                   <button
                     onClick={executeSubscription}
                     disabled={
-                      subscriptionModal.isLoading || 
-                      (subscriptionModal.subscriptionType === 'gift' && 
-                       subscriptionModal.beneficiaryPhone.length !== 13)
+                      subscriptionModal.isLoading ||
+                      (subscriptionModal.subscriptionType === 'gift' &&
+                        subscriptionModal.beneficiaryPhone.length !== 13)
                     }
                     className="flex-1 py-4 bg-mtn-yellow text-mtn-black font-bold rounded-lg hover:bg-mtn-yellow-dark transition flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-5 h-5" />
                     {subscriptionModal.subscriptionType === 'gift' ? 'Offrir le forfait' : 'Souscrire maintenant'}
                   </button>
-                  
+
                   <button
                     onClick={closeSubscriptionModal}
                     className="flex-1 py-4 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition"
@@ -1427,8 +1562,8 @@ const AccountManager = () => {
                       <div className="flex justify-between">
                         <span className="text-red-700">Destinataire:</span>
                         <span className="font-semibold">
-                          {subscriptionModal.subscriptionType === 'gift' 
-                            ? subscriptionModal.beneficiaryPhone 
+                          {subscriptionModal.subscriptionType === 'gift'
+                            ? subscriptionModal.beneficiaryPhone
                             : phoneNumber}
                         </span>
                       </div>
@@ -1457,11 +1592,11 @@ const AccountManager = () => {
                         </>
                       )}
                     </button>
-                    
+
                     <button
-                      onClick={() => setSubscriptionModal(prev => ({ 
-                        ...prev, 
-                        showConfirmation: false 
+                      onClick={() => setSubscriptionModal(prev => ({
+                        ...prev,
+                        showConfirmation: false
                       }))}
                       className="flex-1 py-4 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition"
                       disabled={subscriptionModal.isLoading}
@@ -1500,7 +1635,7 @@ const AccountManager = () => {
                         product_id: subscriptionModal.bundle.id,
                         product_name: subscriptionModal.bundle.name,
                         product_price: subscriptionModal.bundle.cost?.value || 0,
-                        beneficiary_id: subscriptionModal.subscriptionType === 'gift' 
+                        beneficiary_id: subscriptionModal.subscriptionType === 'gift'
                           ? subscriptionModal.beneficiaryPhone.replace('+', '')
                           : phoneNumber.replace('+', ''),
                         payment_method: "momo",

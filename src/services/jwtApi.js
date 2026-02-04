@@ -10,7 +10,28 @@ export const jwtApiService = {
     const response = await axios.post(`${API_BASE_URL}/api/jwt/decode`, { token });
     return response.data;
   },
-  
+  loginWithPhone: async (phoneNumber) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Erreur de connexion');
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
   // Modifier un JWT
   async modifyToken(token, modifications) {
     const response = await axios.post(`${API_BASE_URL}/api/jwt/modify`, { 
