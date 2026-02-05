@@ -157,6 +157,8 @@ const TokenEditor = () => {
                 // Garder la valeur telle quelle
               }
               break;
+              default:
+                break;
           }
           
           modifications[field.key] = value;

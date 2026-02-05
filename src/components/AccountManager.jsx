@@ -2,18 +2,17 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   User, CreditCard, Package, History, Gift,
   RefreshCw, Phone, CheckCircle, AlertCircle,
-  Wifi, MessageSquare, PhoneCall, ChevronRight,
-  Filter, Search, DollarSign, Clock, Globe,
+  Wifi, MessageSquare, PhoneCall,
+  Search, DollarSign, Clock, Globe,
   X, AlertTriangle, Loader2, Send, Database,
-  Shield, Download, Mail, Calendar, Users,
-  Battery, BatteryCharging, Zap, Activity,
-  Bell, Settings, LogOut, Home, BarChart,
-  TrendingUp, Tag, Star, Award, Crown,
-  Eye, EyeOff, Lock, Unlock, Radio, Key,
-  MapPin, Flag, Heart, ShoppingCart, Truck, Code
+  Shield, Download, Mail, Calendar, Zap, Activity,
+  Bell, Settings, LogOut, BarChart,
+  TrendingUp, Tag, Award,
+  Eye, EyeOff,Key, ShoppingCart, Code
 } from 'lucide-react';
 import { useMtnAccount } from '../hooks/useMtnAccount';
 import { toast } from 'react-toastify';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
 
 const AccountManager = () => {
   // États principauxCode 
@@ -26,7 +25,6 @@ const AccountManager = () => {
   const [tokenInput, setTokenInput] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
 
   // Fonction de connexion avec numéro
   const handlePhoneLogin = async (e) => {
@@ -43,7 +41,6 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:300
       const fullPhone = '+237' + phoneInput;
 
       // Appeler l'API de connexion simplifiée
-    // const response = await axios.post(`${API_BASE_URL}/api/jwt/decode`, { token });
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
